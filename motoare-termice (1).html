@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motoarele termice</title>
+<style>
+:root{--bg:#f6f1e9;--fg:#2a2118;--mut:#6b5d4d;--ac:#c2410c;--card:#fffaf2;--bd:#e3d6c3;--oa:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120d;--fg:#f3e9da;--mut:#b3a28b;--ac:#fb923c;--card:#221a12;--bd:#3a2d20;--oa:#1a1206}}
+:root[data-theme="dark"]{--bg:#17120d;--fg:#f3e9da;--mut:#b3a28b;--ac:#fb923c;--card:#221a12;--bd:#3a2d20;--oa:#1a1206}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:Georgia,'Times New Roman',serif;overflow:hidden}
+.slide{position:absolute;inset:0;padding:6vh 7vw 12vh;display:none;flex-direction:column;justify-content:center;overflow-y:auto}
+.slide.on{display:flex}
+h1{font-size:clamp(30px,7vw,64px);line-height:1.05;margin:0 0 .4em}
+h2{font-size:clamp(24px,4.6vw,42px);margin:0 0 .6em;color:var(--ac)}
+p,li{font-size:clamp(16px,2.2vw,22px);line-height:1.5;color:var(--fg)}
+.mut{color:var(--mut)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 18px}
+.card b{color:var(--ac);font-size:1.1em}
+.card p{margin:.4em 0 0;font-size:clamp(15px,1.9vw,19px)}
+.yr{font-family:system-ui,sans-serif;font-weight:700;color:var(--ac);letter-spacing:.04em}
+.f{font-size:clamp(22px,4vw,38px);text-align:center;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:12px 0}
+.eng{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:center}
+svg{width:min(260px,60vw);height:auto}
+.txt{flex:1 1 260px}
+.txt h3{margin:0 0 .3em;color:var(--ac);font-size:clamp(20px,3vw,28px)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 5vw calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--bd);z-index:5;font-family:system-ui,sans-serif}
+nav button{border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;padding:10px 18px;font-size:16px;cursor:pointer}
+nav button:disabled{opacity:.35}
+nav #fs{font-size:20px;line-height:1;min-width:42px;padding:10px 12px}
+:fullscreen{background:var(--bg)}
+:fullscreen body{width:100%;height:100%;overflow:hidden}
+.slide[data-t="env"]{justify-content:flex-start;padding-top:max(28px,env(safe-area-inset-top,0px))}
+.slide[data-t="env"] h2{display:block;visibility:visible}
+
+#bar{flex:1;height:5px;background:var(--bd);border-radius:3px;overflow:hidden}
+#bar i{display:block;height:100%;width:0;background:var(--ac)}
+#cnt{font-size:14px;color:var(--mut);min-width:42px;text-align:right}
+.slide.s3d{padding:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));overflow:hidden}
+#cv{position:absolute;inset:0;touch-action:none;background:radial-gradient(circle at 50% 40%,#2c2218,#120e09)}
+#cv canvas{display:block}
+.hw{position:absolute;left:0;top:0;z-index:3;will-change:transform}
+.hs{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:rgba(20,20,20,.85);color:#fff;font-size:13px;font-weight:800;cursor:pointer;padding:0;font-family:system-ui,sans-serif;transition:background .25s,color .25s,box-shadow .25s;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.hs:hover{background:var(--ac);color:#1a1206}
+.hs:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+.hs.on{background:var(--ac);color:#1a1206;border-color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 35%,transparent),0 0 22px color-mix(in srgb,var(--ac) 85%,transparent)}
+@media (prefers-reduced-motion:reduce){.btn#tr.active::after{animation:none}}
+#top{position:absolute;left:0;right:0;top:0;padding:14px 18px 0;z-index:4;pointer-events:none;font-family:system-ui,sans-serif}
+#top h1{margin:0;font-size:clamp(20px,5vw,30px);font-family:Georgia,serif}
+#top p{margin:2px 0 0;font-size:14px;color:var(--mut)}
+#hud{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:0 12px 8px;display:flex;flex-direction:column;gap:8px;font-family:system-ui,sans-serif}
+.hc{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 14px;backdrop-filter:blur(8px)}
+#info{display:none}
+#info h3{margin:0 0 4px;color:var(--ac);font-size:17px}
+#info p{margin:0;font-size:15px;line-height:1.45}
+.hbar{display:flex;align-items:center;gap:10px}
+#stage{flex:1;font-size:14px;font-weight:600;min-height:1.4em}
+#tt{min-height:1.3em}#td{min-height:4.6em}
+.btn{border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.btn#tr{position:relative;overflow:hidden}
+.btn#tr.active{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--ac) 45%,transparent)}
+.btn#tr.active::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,rgba(255,255,255,.55),transparent 60%);animation:sheen 2.4s ease-in-out infinite}
+.btn#bp.active{background:var(--ac);border-color:var(--ac);color:#fff}
+.hero-gear{position:absolute;right:-12vw;top:50%;margin-top:calc(min(70vw,560px)/-2);width:min(70vw,560px);height:auto;opacity:.04;color:var(--ac);pointer-events:none;z-index:-1}
+.hero-gear *{fill:none;stroke:currentColor;stroke-width:1.2}
+/* cuprins */
+.go-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+.go-row .btn{padding:11px 20px;font-size:15px}
+.toc{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:1rem}
+.toc button{position:relative;overflow:hidden;display:flex;gap:.8rem;align-items:center;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:.9rem 1rem;font:700 .98rem system-ui,sans-serif;color:var(--fg);cursor:pointer;min-height:56px}
+.toc button>*{position:relative;z-index:1}
+.toc .fill{position:absolute;inset:0;z-index:0;background:var(--ac);border-radius:0 50% 50% 0/0 100% 100% 0;pointer-events:none;will-change:transform}
+.toc i{font:700 1.25rem Georgia,'Times New Roman',serif;font-style:normal;color:var(--ac);min-width:1.6em;display:inline-block}
+.toc .ar{margin-left:auto;opacity:0;color:var(--ac);font-weight:800}
+.toc button:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+@keyframes sheen{0%,100%{opacity:.25}50%{opacity:.7}}
+#hint{font-size:12px;color:var(--mut);text-align:center}
+#hint b{color:var(--ac)}
+
+body{background-image:radial-gradient(color-mix(in srgb,var(--mut) 30%,transparent) 1px,transparent 1.3px);background-size:22px 22px}
+h2{position:relative;padding-left:16px;--draw:0;margin-bottom:.95em}
+h2::before{content:"";position:absolute;left:0;top:.1em;bottom:.1em;width:5px;border-radius:3px;background:var(--ac)}
+h2::after{content:"";position:absolute;left:16px;bottom:-9px;height:3px;border-radius:2px;background:var(--ac);width:calc(var(--draw) * 200px)}
+.card{position:relative;overflow:hidden;transition:translate .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.card::before{content:"";position:absolute;left:0;top:0;height:3px;width:100%;background:var(--ac);transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.card:hover{translate:0 -6px;box-shadow:0 14px 30px rgba(0,0,0,.2)}
+.card:hover::before{transform:scaleX(1)}
+.yr{display:inline-flex;align-items:center;gap:7px;padding:3px 11px;border-radius:99px;background:color-mix(in srgb,var(--ac) 13%,transparent);font-size:.85em;transition:scale .25s cubic-bezier(.2,.8,.2,1)}
+.yr:hover{scale:1.06}
+.pd{display:inline-block;width:8px;height:10px;border-radius:2px;background:var(--ac)}
+.f{transition:box-shadow .3s,border-color .3s}
+.f:hover{border-color:var(--ac);box-shadow:0 0 26px color-mix(in srgb,var(--ac) 45%,transparent)}
+nav button,.btn{transition:color .2s,border-color .2s}
+nav button:hover:not(:disabled),.btn:hover{color:var(--ac);border-color:var(--ac)}
+#paper{position:absolute;inset:0;opacity:0;pointer-events:none;background-color:#0e1a2b;background-image:radial-gradient(rgba(255,255,255,.16) 1px,transparent 1.3px);background-size:20px 20px}
+#cv canvas{position:relative;z-index:1}
+#ln{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.lb{position:absolute;z-index:2;font:600 12px ui-monospace,Menlo,monospace;color:#fff;text-shadow:0 0 6px rgba(0,0,0,.9),0 1px 2px rgba(0,0,0,.8);background:rgba(8,6,4,.55);padding:1px 7px;border-radius:6px;opacity:0;white-space:nowrap;pointer-events:none}
+.tour .hw{display:none}
+.tour .lb{pointer-events:auto;cursor:pointer}.tour .lb:hover{background:var(--ac);color:#1a1206;text-shadow:none}
+#info{cursor:pointer}#info::after{content:"Atinge pentru a reveni";display:block;margin-top:6px;font-size:12px;color:var(--mut)}
+.hbar{flex-wrap:wrap}#stage{flex:1 1 100%}
+#scrub{flex:1 1 100%;accent-color:var(--ac);height:22px;margin:0}
+#top,#top h1,#top p{color:#fff}#top p{opacity:.75}#top h1{text-shadow:0 2px 12px rgba(0,0,0,.6)}
+/* carduri slide 2-4: studio 3D (umbre stratificate, margine luminată, reflexie care urmărește cursorul) */
+.card.st{border-color:color-mix(in srgb,var(--ac) 20%,var(--bd));
+box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.15),0 2px 4px rgba(0,0,0,.15),0 8px 16px rgba(0,0,0,.18),0 24px 48px rgba(0,0,0,.22),0 0 0 1px color-mix(in srgb,var(--ac) 12%,transparent),0 12px 40px -8px color-mix(in srgb,var(--ac) 30%,transparent);
+transition:box-shadow .4s cubic-bezier(.2,.8,.2,1),translate .35s cubic-bezier(.2,.8,.2,1),border-color .35s}
+.card.st:hover{translate:0 -4px;border-color:color-mix(in srgb,var(--ac) 55%,var(--bd));
+box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(0,0,0,.2),0 4px 8px rgba(0,0,0,.18),0 16px 28px rgba(0,0,0,.22),0 40px 72px rgba(0,0,0,.25),0 0 0 1px color-mix(in srgb,var(--ac) 40%,transparent),0 24px 60px -10px color-mix(in srgb,var(--ac) 55%,transparent)}
+/* fundal tematic (nu și pe .s3d) */
+.slide{z-index:1}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;color:var(--ac)}
+.bg::before{content:"";position:absolute;inset:0;opacity:.05;background-image:linear-gradient(var(--mut) 1px,transparent 1px),linear-gradient(90deg,var(--mut) 1px,transparent 1px);background-size:44px 44px}
+.bg svg{height:auto;overflow:visible;display:block}
+.bg svg{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--ac) 90%,white)) drop-shadow(0 0 14px color-mix(in srgb,var(--ac) 65%,transparent))}
+.bg .bg-lines{position:absolute;inset:0;width:100%;height:100%}
+.bg-trace{opacity:.14}
+.bg-lines .bg-line{stroke-width:2.5;opacity:.55;stroke-dasharray:.2 .8}
+@media (prefers-reduced-motion:reduce){.bg-lines .bg-line{stroke-dasharray:none;opacity:.25}}
+.bg svg *{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bg-gear{position:absolute;top:-6vh;right:-6vw;width:min(44vw,320px);opacity:.16}
+.bg-gear .gr{transform-box:view-box;transform-origin:50% 50%;animation:gear-spin 70s linear infinite;will-change:transform}
+@keyframes gear-spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.bg-gear{width:min(48vw,220px);opacity:.23}}
+@media(prefers-reduced-motion:reduce){.bg-gear .gr{animation:none}}
+.bg-eng{position:absolute;left:3vw;bottom:10vh;width:min(20vw,130px);opacity:.18}
+.bg-eng svg{width:100%}
+
+/* animata-inspired: glowing card, animated border trail, marquee, fluid tabs, flip cards, ring chart */
+:root{--gr:#2f7d4f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--gr:#6ee7a0}}
+:root[data-theme="dark"]{--gr:#6ee7a0}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%)}
+.card:hover::after{opacity:1}
+.w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.12em;margin-bottom:-.12em}.w>span{display:inline-block}
+.go-row .btn:first-child{border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,conic-gradient(from var(--ang),transparent 70%,var(--ac)) border-box;animation:trail 3s linear infinite}
+@keyframes trail{to{--ang:360deg}}
+h1.shim{background:linear-gradient(100deg,var(--fg) 40%,var(--ac) 50%,var(--fg) 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 5s ease-in-out infinite}
+@keyframes shim{0%{background-position:100% 0}60%,100%{background-position:0 0}}
+.mq{overflow:hidden;border-block:1px solid var(--bd);margin:0 0 14px;-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mq>div{display:flex;gap:2.2rem;width:max-content;animation:mq 28s linear infinite;font:14px system-ui,sans-serif;color:var(--mut);padding:8px 0;white-space:nowrap}
+.mq b{color:var(--ac)}
+@keyframes mq{to{transform:translateX(-50%)}}
+.tabs{position:relative;display:inline-flex;padding:4px;border:1px solid var(--bd);border-radius:99px;background:var(--card);margin-bottom:14px;align-self:flex-start}
+.tabs button{position:relative;z-index:1;border:0;background:none;padding:9px 18px;border-radius:99px;font:700 15px system-ui,sans-serif;color:var(--fg);cursor:pointer;transition:color .3s}
+.tabs button.on{color:var(--oa)}
+.tabs button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.tabs .pill{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:99px;background:var(--ac);transition:background .3s}
+.tabs.g .pill{background:var(--gr)}
+.pan{display:none}.pan.on{display:block}
+.pol{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+@media (max-width:640px){.pol{grid-template-columns:1fr;justify-items:center}}
+.ring{position:relative;width:150px;height:150px;text-align:center}
+.ring svg{width:150px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12;stroke-linecap:round}
+.ring .t{stroke:var(--bd)}.ring .v{stroke:var(--ac);stroke-dasharray:314;stroke-dashoffset:314}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font:700 30px Georgia,serif;color:var(--ac)}
+.cap{font:13px system-ui,sans-serif;color:var(--mut);max-width:170px;margin:6px 0 0}
+.pol .row{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.pol .card p{font-size:clamp(14px,1.7vw,17px)}
+.fl{perspective:800px;height:190px;cursor:pointer;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit}
+.fl>span{display:block;position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.3,1.2,.4,1);transform-style:preserve-3d}
+.fl.on>span{transform:rotateY(180deg)}
+.fl>span>span{display:block;position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:14px;padding:14px 16px;border:1px solid var(--bd);background:var(--card);overflow:auto;font-size:clamp(14px,1.7vw,17px);line-height:1.4}
+.fl>span>span+span{transform:rotateY(180deg);background:color-mix(in srgb,var(--gr) 16%,var(--card));border-color:var(--gr)}
+.fl b{display:block;color:var(--gr);font-size:1.1em;margin-bottom:.35em}
+.fl:focus-visible>span>span{outline:2px solid var(--gr)}
+.fl .mut{font:12px system-ui,sans-serif;display:block;margin-top:.5em}
+@media (prefers-reduced-motion:reduce){.go-row .btn:first-child,h1.shim,.mq>div{animation:none}.fl>span{transition:none}}
+/* cuprins: Sibling Focus, Glowing, Ripple (animata) */
+.toc button{transition:filter .35s,scale .35s cubic-bezier(.2,.8,.2,1)}
+.toc:has(button:hover) button:not(:hover),.toc:has(button:focus-visible) button:not(:focus-visible){filter:blur(1.6px) saturate(.55);scale:.97}
+.toc button::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(180px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--ac) 24%,transparent),transparent 70%)}
+.toc button:hover::after{opacity:1}
+.rp{position:absolute;width:24px;height:24px;border-radius:50%;background:var(--ac);opacity:.4;pointer-events:none;z-index:0;transform:translate(-50%,-50%) scale(0);animation:rp .65s ease-out forwards}
+@keyframes rp{to{transform:translate(-50%,-50%) scale(18);opacity:0}}
+@media (prefers-reduced-motion:reduce){.toc button{transition:none}.rp{display:none}}
+.toc button.cur::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;padding:2px;background:conic-gradient(from var(--ang),transparent 55%,var(--ac));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:trail 2.2s linear infinite}
+@media (prefers-reduced-motion:reduce){.toc button.cur::before{animation:none}}
+
+/* animație detaliată pentru motorul în 4 timpi */
+#gas{transition:opacity .25s}
+#vi,#ve{transform-box:fill-box;transform-origin:center;transition:transform .35s,fill .3s}
+#sparkGlow{opacity:0;transform-origin:center;}
+.flow-particle{opacity:0;}
+#intakeFlow.active .flow-particle{opacity:1;animation:flowIn .62s cubic-bezier(.25,.7,.3,1) infinite}
+#exhaustFlow.active .flow-particle{opacity:1;animation:flowOut .68s cubic-bezier(.25,.7,.3,1) infinite}
+@keyframes flowIn{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(0,42px);opacity:0}}
+@keyframes flowOut{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(0,-42px);opacity:0}}
+#crank{transform-box:fill-box;transform-origin:100px 220px;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+#flame{opacity:0;transform-origin:100px 45px}
+#flame.active{opacity:1;animation:flamePulse .42s ease-in-out infinite alternate}
+@keyframes flamePulse{from{opacity:.38;transform:scale(.78) rotate(-4deg)}to{opacity:1;transform:scale(1.22) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){#intakeFlow.active .flow-particle,#exhaustFlow.active .flow-particle,#flame.active{animation:none}}
+
+</style>
+</head>
+<body>
+
+<section class="slide on">
+<p class="yr a">PREZENTARE · FIZICĂ / TERMODINAMICĂ</p>
+<h1 class="a shim">Motoarele termice</h1>
+<p class="a mut">Apariția lor și modul în care funcționează</p>
+<p class="a mut">Folosește săgețile ← → sau butoanele de jos.</p>
+<div class="a go-row"><button class="btn" data-go="2">Începe</button><button class="btn" data-go="1">Cuprins</button></div>
+</section>
+<section class="slide" data-t="toc">
+<h2 class="a">Cuprins</h2>
+<p class="a mut">Apasă pe o temă ca să sari direct la ea.</p>
+<div class="toc">
+<button data-go="2"><i>1</i><span>Primele idei (sec. I – XVII)</span></button>
+<button data-go="3"><i>2</i><span>Mașina cu abur</span></button>
+<button data-go="4"><i>3</i><span>Motorul cu ardere internă</span></button>
+<button data-go="5"><i>4</i><span>Principiul de funcționare</span></button>
+<button data-go="6"><i>5</i><span>Motorul în 4 timpi</span></button>
+<button data-go="7"><i>6</i><span>Motorul în 2 timpi</span></button>
+<button data-go="8"><i>7</i><span>Poluarea și prevenirea</span></button>
+<button data-go="9"><i>8</i><span>Concluzii</span></button>
+</div>
+</section>
+
+<section class="slide">
+<h2 class="a">Primele idei (sec. I – XVII)</h2>
+<div class="row">
+<div class="card a"><span class="yr">sec. I d.Hr.</span><br><b>Eolipila lui Heron</b><p>Un recipient cu apă încălzită eliberează aburi prin două ajutaje și se rotește. Este o jucărie, dar demonstrează că aburul poate produce mișcare.</p></div>
+<div class="card a"><span class="yr">1679–1690</span><br><b>Denis Papin</b><p>Construiește oala sub presiune și propune ideea pistonului mișcat de abur, apoi răcit pentru a reveni.</p></div>
+<div class="card a"><span class="yr">1698</span><br><b>Thomas Savery</b><p>Pompa „a prietenului minerului”, folosită la scoaterea apei din mine. Fără piston, cu randament foarte mic.</p></div>
+</div>
+</section>
+
+<section class="slide">
+<h2 class="a">Mașina cu abur</h2>
+<div class="row">
+<div class="card a"><span class="yr">1712</span><br><b>Thomas Newcomen</b><p>Primul motor cu piston folosit pe scară largă. Aburul se condensează în cilindru, iar presiunea atmosferică împinge pistonul. Pierde multă căldură, pentru că cilindrul se încălzește și se răcește la fiecare ciclu.</p></div>
+<div class="card a"><span class="yr">1769</span><br><b>James Watt</b><p>Introduce condensatorul separat, apoi mișcarea de rotație și regulatorul centrifugal. Consumul de combustibil scade mult, iar mașina poate acționa fabrici.</p></div>
+<div class="card a"><span class="yr">1801–1829</span><br><b>Trevithick, Stephenson</b><p>Abur la presiune înaltă, locomotiva și apoi „Rocket” (1829): începe epoca căilor ferate.</p></div>
+</div>
+</section>
+
+<section class="slide">
+<h2 class="a">Motorul cu ardere internă</h2>
+<div class="row">
+<div class="card a"><span class="yr">1860</span><br><b>Étienne Lenoir</b><p>Motor cu gaz de iluminat, fără compresie prealabilă. Randament mic, dar funcțional.</p></div>
+<div class="card a"><span class="yr">1876</span><br><b>Nikolaus Otto</b><p>Ciclul în 4 timpi: admisie, comprimare, ardere, evacuare. Stă la baza motoarelor pe benzină.</p></div>
+<div class="card a"><span class="yr">1893–1897</span><br><b>Rudolf Diesel</b><p>Aerul este comprimat puternic, iar combustibilul injectat se aprinde singur, fără bujie. Randament mai bun.</p></div>
+</div>
+<p class="a mut">Mai târziu: turbina cu abur (Parsons, 1884) și motorul cu reacție (Whittle, von Ohain, 1937).</p>
+</section>
+
+<section class="slide">
+<h2 class="a">Principiul de funcționare</h2>
+<p class="a">Un motor termic transformă o parte din căldura primită în lucru mecanic. O parte din căldură trebuie cedată sursei reci.</p>
+<div class="f a">Q<sub>1</sub> = L + Q<sub>2</sub></div>
+<div class="f a">η = L / Q<sub>1</sub> = 1 − Q<sub>2</sub> / Q<sub>1</sub></div>
+<p class="a">Sadi Carnot (1824) a arătat că randamentul maxim depinde doar de temperaturile surselor (în kelvin):</p>
+<div class="f a">η<sub>max</sub> = 1 − T<sub>2</sub> / T<sub>1</sub></div>
+<div class="a card st" style="margin-top:14px"><b>De la piston la roți: cum se transmite forța</b><p>Într-un motor cu mai mulți cilindri, fiecare piston împinge prin <b>bielă</b> arborele cotit. Pistoanele nu se împing direct unul pe altul: bielele lor acționează asupra aceluiași arbore, iar rotația este sincronizată. <b>Arborele cotit → volant → ambreiaj / transmisie → roți</b>. Volantul ajută la menținerea rotației între impulsurile de putere.</p></div>
+<p class="a mut">Niciun motor real nu transformă toată căldura în lucru mecanic.</p>
+</section>
+
+<section class="slide">
+<h2 class="a">Motorul în 4 timpi</h2>
+<div class="eng">
+<svg viewBox="0 0 200 280" aria-label="Animație schematică a motorului în patru timpi, cu piston, supape, bielă, arbore și fluxuri">
+<rect x="60" y="40" width="80" height="180" rx="5" fill="none" stroke="currentColor" stroke-width="3"/>
+<rect id="gas" x="63" y="40" width="74" height="0" fill="#4fc3f7" opacity=".45"/>
+<g id="intakeFlow" class="flow-particle" fill="#49b8f4"><circle class="flow-particle" cx="78" cy="31" r="4"/><circle class="flow-particle" cx="86" cy="31" r="4"/><circle class="flow-particle" cx="94" cy="31" r="4"/><circle class="flow-particle" cx="78" cy="31" r="4" style="animation-delay:.35s"/><circle class="flow-particle" cx="86" cy="31" r="4" style="animation-delay:.55s"/></g>
+<g id="exhaustFlow" class="flow-particle" fill="#a5b0bb"><circle class="flow-particle" cx="116" cy="45" r="4"/><circle class="flow-particle" cx="122" cy="45" r="4" style="animation-delay:.35s"/><circle class="flow-particle" cx="128" cy="45" r="4" style="animation-delay:.55s"/></g>
+<g id="pg"><rect x="63" y="0" width="74" height="14" rx="2" fill="currentColor"/><line x1="100" y1="14" x2="100" y2="140" stroke="currentColor" stroke-width="6"/></g>
+<rect id="vi" x="72" y="30" width="22" height="8" rx="2" fill="#888"/><rect id="viStem" x="81" y="17" width="4" height="16" fill="#777"/>
+<rect id="ve" x="106" y="30" width="22" height="8" rx="2" fill="#888"/><rect id="veStem" x="115" y="17" width="4" height="16" fill="#777"/>
+<g id="flame"><path d="M100 44 C90 36 97 30 100 26 C108 34 113 38 100 44 Z" fill="#ff5722"/><path d="M100 43 C96 38 100 34 101 32 C105 38 105 40 100 43 Z" fill="#ffeb3b"/></g>
+<circle id="sp2" cx="100" cy="46" r="0" fill="#ffeb3b" opacity="0"/><circle id="sp" cx="100" cy="46" r="0" fill="#ffeb3b"/>
+<line id="biela" x1="100" y1="154" x2="100" y2="218" stroke="#c4cbd1" stroke-width="7" stroke-linecap="round"/><g id="crank"><circle cx="100" cy="220" r="23" fill="none" stroke="#7d8791" stroke-width="5"/><circle id="crankPin" cx="100" cy="205" r="7" fill="#ffb74d"/><line id="crankArm" x1="100" y1="220" x2="100" y2="205" stroke="#ffb74d" stroke-width="8" stroke-linecap="round"/></g>
+<text x="83" y="22" text-anchor="middle" font-size="10" fill="currentColor">adm.</text><text x="117" y="22" text-anchor="middle" font-size="10" fill="currentColor">evac.</text>
+<text x="100" y="260" text-anchor="middle" font-size="10" fill="currentColor">arbore cotit</text>
+</svg>
+<div class="txt"><h3 id="tt"></h3><p id="td"></p><p class="mut">Verde = supapă deschisă · săgeți/particule = circulația gazelor · 4 timpi = 720° (2 rotații)</p></div>
+<div class="go-row a" style="justify-content:center"><button class="btn" id="cycleToggle">Pauză animație</button><button class="btn" id="cycleStep">Următorul timp</button><button class="btn" id="cycleReset">Reia de la admisie</button></div>
+</div>
+</section>
+
+<section class="slide s3d">
+<div id="cv"><div id="paper"></div></div>
+<div id="top"><h1>Motorul în 2 timpi</h1><p>Model 3D în secțiune · atinge numerele</p></div>
+<div id="hud"><div id="info" class="hc"><h3 id="it"></h3><p id="ip"></p></div>
+<div class="hc hbar"><span id="stage"></span><button class="btn" id="pp">Pauză</button><button class="btn" id="ov">Ansamblu</button><button class="btn" id="tr">Explodare</button><button class="btn" id="bp">Radiografie</button><input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Grad de explodare"></div>
+<div id="hint">Apasă <b>Explodare</b> pentru a desface motorul și din nou pentru a-l asambla · trage cu degetul ca să rotești</div></div>
+</section>
+
+<section class="slide" data-t="env">
+<h2 class="a">Motoarele și mediul: poluare și soluții</h2>
+<div class="mq a" aria-hidden="true"><div><span><b>CO₂</b> gaz cu efect de seră</span><span><b>NOₓ</b> smog și ploi acide</span><span><b>PM2,5</b> particule fine</span><span><b>CO</b> monoxid de carbon, toxic</span><span><b>HC</b> hidrocarburi nearse</span><span><b>SO₂</b> oxizi de sulf</span><span><b>CO₂</b> gaz cu efect de seră</span><span><b>NOₓ</b> smog și ploi acide</span><span><b>PM2,5</b> particule fine</span><span><b>CO</b> monoxid de carbon, toxic</span><span><b>HC</b> hidrocarburi nearse</span><span><b>SO₂</b> oxizi de sulf</span></div></div>
+<div class="tabs a"><i class="pill"></i><button class="on">Cum poluează</button><button>Cum prevenim</button></div>
+<div class="pan on">
+<div class="pol"><div><div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="t" cx="60" cy="60" r="50"/><circle class="v" cx="60" cy="60" r="50"/></svg><span id="rn">23%</span></div><p class="cap">din CO₂ mondial legat de energie vine din transport (aprox.)</p></div>
+<div class="row">
+<div class="card"><b>CO₂</b><p>Arderea unui litru de benzină degajă aproape 2,3 kg de CO₂. Gazul întărește efectul de seră și încălzește clima.</p></div>
+<div class="card"><b>NOₓ</b><p>Se formează la temperaturi mari în cilindru. Produc smog și ploi acide și irită căile respiratorii.</p></div>
+<div class="card"><b>Particule (PM)</b><p>Funinginea, mai ales de la diesel. Particulele fine ajung adânc în plămâni.</p></div>
+<div class="card"><b>CO și hidrocarburi</b><p>CO este toxic. Motorul în 2 timpi pierde pe eșapament o parte din amestecul nears, deci poluează mai mult.</p></div>
+</div></div></div>
+<div class="pan"><div class="row">
+<button class="fl"><span><span><b>Filtrăm gazele</b>Convertizor catalitic și filtru de particule.<i class="mut">Atinge pentru detalii</i></span><span><b>Filtrăm gazele</b>Convertizorul transformă CO, NOₓ și hidrocarburile în CO₂, azot și apă. Filtrul de particule reține funinginea.</span></span></button>
+<button class="fl"><span><span><b>Motor îngrijit</b>Reglaj, filtre curate, conducere liniștită.<i class="mut">Atinge pentru detalii</i></span><span><b>Motor îngrijit</b>Motorul reglat și filtrele curate scad consumul. Presiunea corectă în pneuri, accelerările line și oprirea motorului la staționare reduc emisiile.</span></span></button>
+<button class="fl"><span><span><b>Alternative</b>Transport în comun, bicicletă, electric.<i class="mut">Atinge pentru detalii</i></span><span><b>Alternative</b>Autobuzul, bicicleta și mersul pe jos nu poluează deloc sau foarte puțin. Mașinile electrice nu au emisii la eșapament; contează și sursa curentului.</span></span></button>
+<button class="fl"><span><span><b>Norme și combustibili</b>Normele Euro și combustibili curați.<i class="mut">Atinge pentru detalii</i></span><span><b>Norme și combustibili</b>Normele Euro limitează emisiile pe fiecare tip de poluant. Combustibilii fără sulf și biocombustibilii ajută, iar motoarele vechi în 2 timpi se înlocuiesc cu cele în 4 timpi sau electrice.</span></span></button>
+</div></div>
+</section>
+
+<section class="slide">
+<h2 class="a">Concluzii</h2>
+<ul>
+<li class="a">Motoarele termice au apărut din nevoia de a scoate apa din mine și au pornit Revoluția industrială.</li>
+<li class="a">Au evoluat de la mașina cu abur la motoarele cu ardere internă și la turbine.</li>
+<li class="a">Toate funcționează după același principiu: căldură → lucru mecanic + căldură cedată.</li>
+<li class="a">Limita randamentului este dată de legile termodinamicii.</li>
+<li class="a">Motoarele poluează (CO₂, NOₓ, particule), dar emisiile se reduc prin filtre, întreținere, norme stricte și alternative.</li>
+<li class="a">Modelul 3D arată cum motorul în 2 timpi face un ciclu complet la o rotație a arborelui.</li>
+</ul>
+</section>
+
+<nav><button id="pv">←</button><button id="mn" aria-label="Cuprins">≡</button><div id="bar"><i></i></div><span id="cnt" aria-live="polite" aria-atomic="true"></span><button id="fs" aria-label="Ecran complet" title="Ecran complet">⛶</button><button id="nx">→</button></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+// Preferințe de accesibilitate: verifică dacă utilizatorul a cerut reducerea animațiilor.
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// SCENA 3D A MOTORULUI
+// Următoarea secțiune construiește modelul tridimensional, luminile, materialele și piesele motorului.
+(function(){
+let active=false,stg='',dirty=true;
+const PI=Math.PI,cvEl=document.getElementById('cv');
+const coarse=matchMedia('(pointer:coarse)').matches;
+const R=new THREE.WebGLRenderer({antialias:!coarse,alpha:true});
+let PR=Math.min(devicePixelRatio,coarse?1.5:2);R.setPixelRatio(PR);cvEl.appendChild(R.domElement);
+// mobilele pierd contextul WebGL după un timp: îl recuperăm în loc de canvas negru
+R.domElement.addEventListener('webglcontextlost',e=>e.preventDefault());
+R.domElement.addEventListener('webglcontextrestored',()=>{dirty=true});
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,1,.1,100);
+sc.add(new THREE.AmbientLight(0xffffff,.75));
+const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(4,8,9);sc.add(dl);
+const dl2=new THREE.DirectionalLight(0x88aaff,.5);dl2.position.set(-6,2,4);sc.add(dl2);
+const pl=new THREE.PointLight(0xff8a2a,0,6);pl.position.set(0,4.1,.6);sc.add(pl);
+const E=new THREE.Group();sc.add(E);
+
+const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,metalness:.55,roughness:.4},o||{}));
+const steel=M(0x8a8f94),steel2=M(0x8a8f94,{side:2}),dark=M(0x4a4e52),light=M(0xd2d6da,{metalness:.25,roughness:.5});
+const glass=new THREE.MeshStandardMaterial({color:0x66b3ff,transparent:true,opacity:.26,roughness:.1,metalness:0,side:2,depthWrite:false});
+const CY=(r,h,s,o,t0,t1)=>new THREE.CylinderGeometry(r,r,h,s||32,1,o,t0,t1);
+function add(g,m,x,y,z,rx,ry,rz,par){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.rotation.set(rx||0,ry||0,rz||0);(par||E).add(o);return o}
+
+// CONSTRUCȚIA MODELULUI 3D
+// Se adaugă pe rând carterul, arborele cotit, cilindrul, pistonul și celelalte componente.
+// carter
+add(CY(1.6,1.6,48,true),steel2,0,0,0,PI/2);
+add(new THREE.CircleGeometry(1.6,48),dark,0,0,-.8);
+add(new THREE.CircleGeometry(1.55,48),glass,0,0,.8);
+add(new THREE.TorusGeometry(1.6,.13,12,48),steel,0,0,.8);
+for(let i=0;i<8;i++){const a=i*PI/4;add(CY(.13,.22,6),dark,1.82*Math.cos(a),1.82*Math.sin(a),.7,PI/2)}
+// manivelă
+const CR=new THREE.Group();CR.position.z=.2;E.add(CR);
+add(CY(1.1,.12,40),light,0,0,0,PI/2,0,0,CR);
+add(CY(1.1,.15,24,false,-PI/2,PI),M(0x9aa0a6),0,0,0,PI/2,0,0,CR);
+add(new THREE.BoxGeometry(.38,1.05,.2),M(0xaeb4ba,{metalness:.72,roughness:.3}),0,.26,-.1,0,0,0,CR); // brațul manivelei
+add(CY(.16,.5,16),M(0xdfe3e6,{metalness:.8,roughness:.25}),0,.5,-.1,PI/2,0,0,CR);
+add(CY(.3,.34,22),M(0xd7dbe0,{metalness:.88,roughness:.18}),0,.5,-.1,PI/2,0,0,CR); // cuzinet capăt mare
+add(CY(.95,.16,44),M(0x7f858b,{metalness:.6,roughness:.34}),0,0,1.25,PI/2,0,0,CR); // volant
+add(new THREE.TorusGeometry(.95,.07,10,44),steel,0,0,1.34,0,0,0,CR);
+add(CY(.2,1.6,20),M(0xdfe3e6,{metalness:.8,roughness:.25}),0,0,1.0,PI/2);
+// cilindru, aripioare, chiulasă, bujie
+add(CY(.78,2.7,40,true,PI/2,PI),steel2,0,3.05,0);
+for(let y=3.4;y<4.35;y+=.13)[-1,1].forEach(s=>add(new THREE.BoxGeometry(.58,.06,1.55),dark,s*1.06,y,0));
+for(let y=1.95;y<3.35;y+=.13)[-1,1].forEach(s=>add(new THREE.BoxGeometry(.42,.06,1.5),dark,s*1.06,y,-.1));
+add(new THREE.BoxGeometry(2.5,.55,1.8),light,0,4.68,0);
+[[-1.05,-.5],[1.05,-.5],[-1.05,.5],[1.05,.5]].forEach(p=>add(CY(.09,.5,8),M(0x6a6f74,{metalness:.7,roughness:.35}),p[0],4.98,p[1])); // prezoane chiulasă
+const spark=add(CY(.12,.6,12),M(0xeeeeee),0,5.25,0);
+add(CY(.2,.18,6),dark,0,5.6,0);
+add(CY(.1,.28,10),M(0xc9a227,{metalness:.6,roughness:.4}),0,5.74,0); // borna bujiei
+// țevi
+add(CY(.22,1.6,20),steel,1.55,3.3,0,0,0,PI/2);add(CY(.3,.12,20),dark,2.3,3.3,0,0,0,PI/2);
+add(new THREE.TorusGeometry(.24,.05,8,22),dark,2.02,3.3,0,0,PI/2,0);
+add(CY(.16,1.5,16),steel,-1.0,2.35,.6);add(CY(.16,.5,16),steel,-.75,3.0,.6,0,0,PI/2);
+add(CY(.24,1.0,20),steel,-2.1,0,0,0,0,PI/2);add(CY(.32,.12,20),dark,-2.6,0,0,0,0,PI/2);
+// piston, bielă, camera de ardere
+const P=new THREE.Group();E.add(P);
+add(CY(.74,.8,32),light,0,0,0,0,0,0,P);
+add(CY(.7,.12,32),M(0xc3c8cd,{metalness:.5,roughness:.45}),0,.42,0,0,0,0,P); // bolta pistonului
+[.27,.15,.03].forEach(y=>add(CY(.76,.05,32),dark,0,y,0,0,0,0,P)); // segmenți
+add(CY(.11,1.0,16),M(0xdfe3e6,{metalness:.85,roughness:.2}),0,-.02,0,PI/2,0,0,P); // bolt piston
+const rod=add(new THREE.BoxGeometry(.2,3.1,.14),steel,0,2,0);
+const bm=new THREE.MeshBasicMaterial({color:0xff9a2e,transparent:true,opacity:.8,depthWrite:false});
+const burn=add(CY(.72,1,32),bm,0,4,0);
+
+const EXM=[],MATS=[],S3={ex:0,w:0,lab:0,cy:0,kz:1,ry:0};
+// încadrarea în starea demontată: mai departe (model mai mic) și ridicat deasupra panoului din portret
+let CYX=1.5,KZX=1.75;
+const cat=o=>{const p=o.position,x=p.x,y=p.y,z=p.z;
+if(o===CR)return[0,0,1.2];if(o===P||o===rod||o===burn)return null;
+if(z===1)return[0,0,2.2];if(z===.8||z===.7)return[0,0,3];if(z===-.8)return[0,0,-1.6];if(z===.6)return[-1.8,1.6,.6];
+if(x<-2)return[-1.8,0,0];if(x>1.4&&y===3.3)return[2,1.6,0];if(y>5)return[0,4.6,0];if(y>4.6)return[0,3.2,0];
+if(y>1.9)return[Math.sign(x)*.5,1.6,0];return null};
+E.children.slice().forEach(o=>{if(!(o.isMesh||o===CR))return;const c=cat(o);if(c){o.userData.b=o.position.clone();o.userData.v=new THREE.Vector3(c[0],c[1],c[2]);EXM.push(o)}});
+// DETALII SUPLIMENTARE ALE MODELULUI
+// Acest bloc adaugă elemente mici (șuruburi, garnituri, nervuri și racorduri) pentru un model mai realist.
+// ---- detalii suplimentare (vector de explodare dat explicit; pe părinți CR/P se mișcă împreună cu ei) ----
+const BX=(a,b,c)=>new THREE.BoxGeometry(a,b,c),TR=(r,t,n)=>new THREE.TorusGeometry(r,t,8,n||24),
+chrome=M(0xdfe3e6,{metalness:.85,roughness:.2}),brass=M(0xc9a227,{metalness:.6,roughness:.4}),white=M(0xf2f2ee,{metalness:.1,roughness:.55}),redm=M(0xb23a2e,{metalness:.3,roughness:.5}),dk2=M(0x2b2f33,{metalness:.4,roughness:.6});
+function det(g,m,x,y,z,rx,ry,rz,v,par){const o=add(g,m,x,y,z,rx,ry,rz,par);if(v&&!par){o.userData.b=o.position.clone();o.userData.v=new THREE.Vector3(v[0],v[1],v[2]);EXM.push(o)}return o}
+// carter, tălpi, placă de fixare, dop de golire
+[-.55,-.25,.05].forEach(z=>det(TR(1.6,.04,64),steel,0,0,z));
+[-1,1].forEach(q=>det(BX(.7,.4,1.4),dark,q*1.15,-1.62,0));
+det(BX(4.2,.2,2.1),dk2,0,-1.93,0);
+[[-1.8,-.8],[1.8,-.8],[-1.8,.8],[1.8,.8]].forEach(p=>det(CY(.12,.14,6),chrome,p[0],-1.76,p[1]));
+det(CY(.1,.2,10),brass,0,-1.72,0);
+// lagăr și capăt de arbore (spate), capac carter (față)
+det(CY(.42,.3,28),dk2,0,0,-.62,PI/2,0,0,[0,0,-1.6]);
+det(CY(.2,.8,20),chrome,0,0,-1.05,PI/2,0,0,[0,0,-1.6]);
+det(CY(.22,.1,20),chrome,0,0,.86,PI/2,0,0,[0,0,3]);
+det(TR(1.0,.025,48),steel,0,0,.82,0,0,0,[0,0,3]);det(TR(.4,.04,32),steel,0,0,.82,0,0,0,[0,0,3]);
+// chiulasă: aripioare, capete de șurub, garnitură
+[-.84,-.62,-.4,.4,.62,.84].forEach(x=>det(BX(.06,.2,1.7),dark,x,5.06,0,0,0,0,[0,3.2,0]));
+[[-1.05,-.5],[1.05,-.5],[-1.05,.5],[1.05,.5]].forEach(p=>det(CY(.14,.1,6),dark,p[0],5.27,p[1],0,0,0,[0,3.2,0]));
+det(BX(2.54,.05,1.84),dk2,0,4.38,0,0,0,0,[0,2.4,0]);
+// bujie: nervuri ceramice, filet, electrod
+[5.12,5.25,5.38].forEach(y=>det(CY(.17,.04,16),white,0,y,0,0,0,0,[0,4.6,0]));
+det(CY(.1,.55,12),brass,0,4.72,0,0,0,0,[0,4.6,0]);det(CY(.04,.28,8),brass,.06,4.28,0,0,0,0,[0,4.6,0]);
+// cilindru: flanșă, prezoane, ferestre de evacuare și transfer
+det(BX(2.3,.14,1.9),light,0,1.78,0,0,0,0,[0,1.6,0]);
+[[-.95,-.65],[.95,-.65],[-.95,.65],[.95,.65]].forEach(p=>det(CY(.07,.6,8),chrome,p[0],1.6,p[1],0,0,0,[0,1.6,0]));
+det(BX(.06,.55,.55),dk2,.77,3.3,0,0,0,0,[.5,1.6,0]);det(BX(.06,.45,.5),dk2,-.77,2.55,0,0,0,0,[-.5,1.6,0]);
+// toba de eșapament, coliere, șuruburi de flanșă
+det(CY(.4,1.0,24),light,2.95,3.3,0,0,0,PI/2,[2,1.6,0]);det(CY(.14,.3,16),dark,3.6,3.3,0,0,0,PI/2,[2,1.6,0]);
+[2.6,3.3].forEach(x=>det(TR(.4,.03,28),dark,x,3.3,0,0,PI/2,0,[2,1.6,0]));
+[[.2,.2],[-.2,.2],[.2,-.2],[-.2,-.2]].forEach(p=>det(CY(.04,.16,6),chrome,2.37,3.3+p[0],p[1],0,0,PI/2,[2,1.6,0]));
+// admisie: carburator, cuvă, clapetă, supapă lamelară
+det(CY(.3,.8,20),steel,-3.05,0,0,0,0,PI/2,[-1.8,0,0]);det(CY(.22,.36,16),brass,-3.05,-.52,0,0,0,0,[-1.8,0,0]);det(CY(.13,.34,12),chrome,-3.05,.55,0,0,0,0,[-1.8,0,0]);
+det(BX(.34,.72,.5),dk2,-1.78,0,0,0,0,0,[-1.8,0,0]);det(BX(.03,.5,.32),redm,-1.62,0,0,0,0,0,[-1.8,0,0]);
+// tubul de transfer: coliere
+[1.7,3.0].forEach(y=>det(CY(.2,.08,16),dark,-1.0,y,.6,0,0,0,[-1.8,1.6,.6]));
+// arbore cotit (în CR): piulițe, găuri de ușurare, butuc, piuliță, magneți
+det(CY(.11,.1,6),dark,0,.5,.22,PI/2,0,0,null,CR);det(CY(.11,.1,6),dark,0,.5,-.41,PI/2,0,0,null,CR);
+for(let i=0;i<6;i++){const a=i*PI/3+.26;det(CY(.17,.012,20),dk2,.6*Math.cos(a),.6*Math.sin(a),1.336,PI/2,0,0,null,CR)}
+det(CY(.3,.3,22),chrome,0,0,1.45,PI/2,0,0,null,CR);det(CY(.24,.14,6),dark,0,0,1.64,PI/2,0,0,null,CR);
+[.8,3.94].forEach(a=>det(BX(.32,.14,.18),redm,.84*Math.cos(a),.84*Math.sin(a),1.38,0,0,a,null,CR));
+[-1,1].forEach(q=>det(CY(.12,.012,16),dk2,q*.3,-.6,.09,PI/2,0,0,null,CR));
+// piston: inele de siguranță, deflector, ferestre în fustă
+[-1,1].forEach(q=>{det(CY(.13,.04,14),chrome,0,-.02,q*.53,PI/2,0,0,null,P);det(BX(.3,.22,.06),dk2,0,-.22,q*.73,0,0,0,null,P)});
+det(BX(.5,.16,.9),dk2,.12,.5,0,0,0,0,null,P);
+// bielă în dublu T + inele (se mută în fiecare cadru)
+const rodS=det(CY(.2,.2,18),chrome,0,0,0,PI/2,0,0),rodB=det(CY(.28,.2,20),chrome,0,0,0,PI/2,0,0),
+rf1=det(BX(.3,2.8,.04),steel,0,2,.09),rf2=det(BX(.3,2.8,.04),steel,0,2,-.09);
+// OPTIMIZAREA MODELULUI 3D
+// Piesele compatibile sunt grupate pentru a reduce numărul de operații de desenare și a îmbunătăți performanța.
+// ---- unire geometrii: sute de mesh-uri -> câteva zeci de draw call-uri (aspect identic) ----
+(function(){
+const MK={},mk=m=>{const k=[m.color.getHex(),m.metalness,m.roughness,m.side].join();return MK[k]||(MK[k]=m)};
+const skip=[rod,rodS,rodB,rf1,rf2,burn],grp={};
+[E,CR,P].forEach(par=>par.children.slice().forEach(o=>{
+ if(!o.isMesh||skip.indexOf(o)>=0||o.material===glass||o.material===bm)return;
+ o.material=mk(o.material);
+ const vv=o.userData.v,key=par.uuid+'|'+o.material.uuid+'|'+(vv?vv.x+','+vv.y+','+vv.z:'s');
+ (grp[key]||(grp[key]={par:par,vv:vv||null,l:[]})).l.push(o)}));
+const ex=EXM.filter(o=>!o.isMesh);
+Object.keys(grp).forEach(key=>{const g=grp[key],l=g.l;
+ if(l.length<2){if(g.vv)ex.push(l[0]);return}
+ let nv=0,ni=0;
+ const gs=l.map(o=>{o.updateMatrix();const q=o.geometry.clone();q.applyMatrix4(o.matrix);nv+=q.attributes.position.count;ni+=q.index.count;return q});
+ const pos=new Float32Array(nv*3),nor=new Float32Array(nv*3),idx=new(nv<65535?Uint16Array:Uint32Array)(ni);let vo=0,io=0;
+ gs.forEach(q=>{const c=q.attributes.position.count,ix=q.index.array;pos.set(q.attributes.position.array,vo*3);nor.set(q.attributes.normal.array,vo*3);
+  for(let i=0;i<ix.length;i++)idx[io+i]=ix[i]+vo;vo+=c;io+=ix.length;q.dispose()});
+ const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.BufferAttribute(pos,3));bg.setAttribute('normal',new THREE.BufferAttribute(nor,3));bg.setIndex(new THREE.BufferAttribute(idx,1));
+ const mm=new THREE.Mesh(bg,l[0].material);g.par.add(mm);
+ l.forEach(o=>{g.par.remove(o);o.geometry.dispose()});
+ if(g.vv){mm.userData.b=new THREE.Vector3();mm.userData.v=g.vv.clone();ex.push(mm)}else{mm.updateMatrix();mm.matrixAutoUpdate=false}});
+EXM.length=0;ex.forEach(o=>EXM.push(o));
+})();
+E.traverse(o=>{if(o.isMesh&&o.material!==bm&&!MATS.includes(o.material)){MATS.push(o.material);o.material.userData.c=o.material.color.clone()}});
+const XV=[[0,0,0],[0,1.6,0],[0,0,2.2],[2,1.6,0],[-1.8,0,0],null,[0,4.6,0],[0,1.4,0],[-1.8,1.6,.6],[0,0,1.2],[0,3.2,0],[-1.8,0,0],[2,1.6,0]];
+// puncte informative
+const HS=[
+['Carterul','Carterul închide arborele cotit. Când pistonul coboară, comprimă amestecul aer–combustibil din carter.',E,[1.1,-1.1,.9]],
+['Cilindrul','Pistonul alunecă în cilindru. Aripioarele măresc suprafața și duc căldura în aer.',E,[1.1,3.7,.4]],
+['Arborele cotit','Transformă mișcarea rectilinie a pistonului în mișcare de rotație.',E,[0,0,1.35]],
+['Evacuarea','Gazele arse ies pe aici când pistonul coboară și descoperă orificiul.',E,[2.2,3.3,0]],
+['Admisia','Amestecul proaspăt intră în carter când pistonul urcă și creează depresiune.',E,[-2.45,0,0]],
+['Pistonul','Primește presiunea gazelor arse și o transmite bielei. Totodată deschide și închide orificiile.',P,[0,0,.8]],
+['Bujia','Produce scânteia care aprinde amestecul comprimat, aproape de punctul mort superior.',E,[0,5.9,0]],
+['Camera de ardere','Aici amestecul este comprimat, aprins și se destinde, împingând pistonul în jos.',E,[0,4.2,.85]],
+['Orificiul de transfer','Când pistonul ajunge jos, amestecul comprimat din carter trece prin el în cilindru și împinge gazele arse afară.',E,[-1.0,3.0,.8]],
+['Volantul','Înmagazinează energie cinetică și netezește rotația între timpii motori. Magneții lui induc curentul pentru scânteie.',E,[0,0,1.7]],
+['Chiulasa','Închide cilindrul sus și are aripioare de răcire. Garnitura dintre chiulasă și cilindru etanșează camera de ardere.',E,[1.0,5.0,.95]],
+['Carburatorul','Dozează aerul și combustibilul. Amestecul trece apoi prin supapa lamelară, care se deschide doar când în carter apare depresiune.',E,[-3.05,.65,0]],
+['Toba de eșapament','Reduce zgomotul gazelor arse și le conduce în afară. La motorul în 2 timpi ajută și la reumplerea cilindrului.',E,[3.0,3.75,0]]];
+const KEY=i=>i<9?String(i+1):String.fromCharCode(56+i),hw=[];
+HS.forEach((h,i)=>{const o=new THREE.Object3D();o.position.set(...h[3]);h[2].add(o);h.o=o;
+const w=document.createElement('div');w.className='hw';const b=document.createElement('button');b.className='hs';b.textContent=KEY(i);b.setAttribute('aria-label',h[0]);
+b.onclick=e=>{e.stopPropagation();focus(i)};w.appendChild(b);cvEl.appendChild(w);hw.push([w,b])});
+
+const NS='http://www.w3.org/2000/svg',ln=document.createElementNS(NS,'svg');ln.id='ln';cvEl.appendChild(ln);
+const RT=[6,10,7,1,3,12,5,8],LT=[0,2,9,4,11],LB=[];
+HS.forEach((h,i)=>{const el=document.createElement('div');el.className='lb';el.textContent=KEY(i)+' '+h[0].toUpperCase();cvEl.appendChild(el);
+el.addEventListener('pointerdown',e=>e.stopPropagation());el.addEventListener('click',e=>{e.stopPropagation();foc===HS[i]?overview():focus(i)});
+const l=document.createElementNS(NS,'line'),c=document.createElementNS(NS,'circle');l.setAttribute('stroke','#ffffff');l.setAttribute('stroke-width','1.2');c.setAttribute('r','3');c.setAttribute('fill','#ffffff');ln.appendChild(l);ln.appendChild(c);LB[i]={el,l,c,ax:0,ay:0}});
+function layout(){RT.forEach((i,j)=>{const L=LB[i],y=70+j*24;L.el.style.right='12px';L.el.style.left='auto';L.el.style.top=y+'px';L.ax=W-12-L.el.offsetWidth-6;L.ay=y+9});
+LT.forEach((i,j)=>{const L=LB[i],y=70+j*24;L.el.style.left='12px';L.el.style.right='auto';L.el.style.top=y+'px';L.ax=12+L.el.offsetWidth+6;L.ay=y+9})}
+// cameră
+const tgt=new THREE.Vector3(0,1.7,0),home=new THREE.Vector3(0,1.7,0),V={k:1};let dist=18,foc=null,W=1,Hh=1,FYT=0,FYB=0,FYI=0;
+function calcFree(){const hb=document.querySelector('.hbar'),hu=document.getElementById('hud'),tp=document.getElementById('top'),inf=document.getElementById('info');
+FYT=(tp?tp.offsetHeight:0)+6;FYB=Hh-8;if(hb&&hu&&hb.offsetHeight)FYB=hu.offsetTop+hb.offsetTop-8;
+FYI=FYB;if(inf&&hu&&inf.offsetHeight)FYI=hu.offsetTop+inf.offsetTop-8}
+function size(){dirty=true;W=cvEl.clientWidth||1;Hh=cvEl.clientHeight||1;R.setSize(W,Hh);cam.aspect=W/Hh;cam.updateProjectionMatrix();
+const t=2*Math.tan(20*PI/180);dist=Math.max(8.2/t,7.8/(t*cam.aspect));
+// vederea explodată: modelul întreg (de jos până la bujie) încape între titlu și bara cu butoane
+calcFree();const yt=FYT,yb=FYB;
+const hf=Math.max(120,yb-yt),Vh=12.9*1.12*Hh/hf;
+KZX=Math.max(1,Vh/(dist*t));CYX=4.2+((yt+yb)/2-Hh/2)*Vh/Hh-home.y;
+S3.cy=CYX*S3.ex;S3.kz=1+(KZX-1)*S3.ex;layout()}
+addEventListener('resize',size);size();
+function focus(i){foc=HS[i];hw.forEach((x,j)=>x[1].classList.toggle('on',j===i));gsap.to('.hs.on',{opacity:1,duration:.3});gsap.to('.hs:not(.on)',{opacity:.35,duration:.3});
+gsap.to(E.rotation,{x:0,y:0,duration:.8});gsap.to(V,{k:.42/Math.max(1,S3.kz),duration:1,ease:'power2.inOut'});
+const inf=document.getElementById('info');document.getElementById('it').textContent=KEY(i)+'. '+HS[i][0];document.getElementById('ip').textContent=HS[i][1];
+inf.style.display='block';calcFree();gsap.fromTo(inf,{y:26,opacity:0,scale:.96,filter:'blur(6px)'},{y:0,opacity:1,scale:1,filter:'blur(0px)',duration:.55,ease:'power3.out'})}
+function overview(){foc=null;hw.forEach(x=>x[1].classList.remove('on'));gsap.to('.hs',{opacity:1,duration:.3});document.getElementById('info').style.display='none';
+gsap.to(V,{k:1,duration:1,ease:'power2.inOut'});gsap.to(tgt,{x:home.x,y:home.y,z:home.z,duration:1,ease:'power2.inOut'})}
+document.getElementById('info').onclick=()=>overview();
+document.getElementById('ov').onclick=()=>{if(tour)setExploded(false);overview()};
+
+// rotire cu degetul
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));let drag=null;
+let Z=1,ZT=1,pd=0;const ptr=new Map(),setZ=z=>{ZT=cl(z,.35,1.6)},
+pinchD=()=>{const q=[...ptr.values()];return q.length<2?0:Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y)};
+// zoom: rotița mouse-ului, pinch cu două degete, dublu-click = resetare
+cvEl.addEventListener('wheel',e=>{e.preventDefault();setZ(ZT*Math.exp(e.deltaY*.0012))},{passive:false});
+cvEl.addEventListener('dblclick',e=>{if(!e.target.closest('.hs'))setZ(1)});
+cvEl.addEventListener('pointerdown',e=>{if(e.target.closest('.hs'))return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});drag={x:e.clientX,y:e.clientY};if(ptr.size===2){drag=null;pd=pinchD()}});
+addEventListener('pointermove',e=>{if(ptr.has(e.pointerId))ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+if(ptr.size>=2){const d=pinchD();if(pd>0&&d>0)setZ(ZT*pd/d);pd=d;return}
+if(!drag)return;E.rotation.y=cl(E.rotation.y+(e.clientX-drag.x)*.008,-1.2,1.2);E.rotation.x=cl(E.rotation.x+(e.clientY-drag.y)*.005,-.5,.5);drag.x=e.clientX;drag.y=e.clientY});
+const endP=e=>{ptr.delete(e.pointerId);pd=0;if(ptr.size===0)drag=null};
+addEventListener('pointerup',endP);addEventListener('pointercancel',endP);
+
+// Explodare / Asamblare pe buton (comutator — nu se mai desfășoară în timp)
+const paperEl=document.getElementById('paper'),topEl=document.getElementById('top'),scrub=document.getElementById('scrub'),trb=document.getElementById('tr'),ink=new THREE.Color(0xe9f2ff);
+let lw=0,lastLab=0,tour=false,tt='',dr=false;
+function syncUI(){cvEl.classList.toggle('tour',tour);trb.textContent=tour?'Asamblare':'Explodare';trb.classList.toggle('active',tour);tt=tour?'Vedere explodată':'';stg=''}
+function setExploded(on){
+  if(on===tour)return;tour=on;syncUI();if(foc||V.k!==1)overview();gsap.killTweensOf(S3,'ex,cy,kz,lab');
+  if(on){foc=null;hw.forEach(x=>x[1].classList.remove('on'));gsap.to('.hs',{opacity:1,duration:.3});document.getElementById('info').style.display='none'}
+  gsap.to(S3,{ex:on?1:0,cy:on?CYX:0,kz:on?KZX:1,duration:1.5,ease:'power3.inOut',
+    onUpdate:()=>{if(!dr)scrub.value=Math.round(S3.ex*1000)},onComplete:()=>{if(on&&!calm)impact()}});
+  gsap.to(S3,{lab:on?1:0,duration:.9,ease:'power1.out',delay:on?.75:0});
+}
+// „impact” la finalul explodării: flash scurt + tremur de 2px
+function impact(){gsap.fromTo('#cv',{filter:'brightness(1.15)'},{filter:'brightness(1)',duration:.4,clearProps:'filter'});
+gsap.fromTo('#cv',{x:0},{x:2,yoyo:true,repeat:3,duration:.05,ease:'none',onComplete:()=>gsap.set('#cv',{x:0})})}
+trb.onclick=()=>setExploded(!tour);
+// Radiografie = mod wireframe pe fundal albastru de plan tehnic
+const bpb=document.getElementById('bp');let bp=false;
+bpb.onclick=()=>{bp=!bp;bpb.classList.toggle('active',bp);gsap.killTweensOf(S3,'w');gsap.to(S3,{w:bp?1:0,duration:1,ease:'power2.inOut'})};
+// scrub = cantitatea de explodare, controlată manual
+function manualScrub(){const x=scrub.value/1000;tour=x>.02;syncUI();S3.ex=x;S3.cy=CYX*x;S3.kz=1+(KZX-1)*x;S3.lab=x}
+scrub.addEventListener('pointerdown',()=>{dr=true;if(foc||V.k!==1)overview();gsap.killTweensOf(S3,'ex,cy,kz,lab')});
+scrub.addEventListener('input',manualScrub);
+addEventListener('pointerup',()=>{dr=false});
+// animație
+let a=0,play=true,last=performance.now();
+const pp=document.getElementById('pp');pp.onclick=()=>{play=!play;pp.textContent=play?'Pauză':'Pornește'};
+const cB=new THREE.Color(0xffd27a),cO=new THREE.Color(0xff7a1a),cF=new THREE.Color(0x9fd8ff),v=new THREE.Vector3();
+let cyf=0,raf=0,lowFps=false,tog=0,acc=0,fN=0;
+const TT=2*Math.tan(20*PI/180),colA=new THREE.Color(),RODS=[[rod,0],[rf1,.09],[rf2,-.09]],sg=new Float64Array(20),pg=new Float64Array(20);
+function frame(t){if(!active){raf=0;return}raf=requestAnimationFrame(frame);
+if(lowFps&&(tog^=1))return;
+const raw=(t-last)/1000,dt=Math.max(0,Math.min(raw,.05));last=t;
+// guvernor: dacă dispozitivul e lent, scade rezoluția treptat, apoi trece la 30 fps
+if(!lowFps&&raw<.1){acc+=raw;if(++fN>=45){const avg=acc/fN;acc=0;fN=0;if(avg>.026){if(PR>1){PR=Math.max(1,PR-.25);R.setPixelRatio(PR);dirty=true}else lowFps=true}}}
+if(play)a=(a+dt*2.2)%(PI*2);
+if(Z!==ZT){Z+=(ZT-Z)*.25;if(Math.abs(ZT-Z)<.001)Z=ZT}
+{const kzN=V.k*S3.kz*Z,tc=foc?((FYT+FYI)/2-Hh/2)*(dist*TT*kzN)/Hh:S3.cy;cyf+=(tc-cyf)*.15;if(Math.abs(tc-cyf)<.0005)cyf=tc}
+// dacă nimic nu s-a schimbat (pauză, fără mișcare) nu mai redesenăm
+sg[0]=a;sg[1]=S3.ex;sg[2]=S3.cy;sg[3]=S3.kz;sg[4]=S3.w;sg[5]=S3.lab;sg[6]=V.k;sg[7]=tgt.x;sg[8]=tgt.y;sg[9]=tgt.z;sg[10]=E.rotation.x;sg[11]=E.rotation.y;sg[12]=W;sg[13]=Hh;sg[14]=foc?1:0;sg[15]=PR;sg[16]=Z;sg[17]=cyf;
+let ch=dirty;dirty=false;for(let i=0;i<18;i++)if(sg[i]!==pg[i]){pg[i]=sg[i];ch=true}
+if(!ch)return;
+const s=Math.sin(a),c=Math.cos(a),py=.5*c+Math.sqrt(9.61-.25*s*s);
+const pe=py+.8*S3.ex;P.position.y=pe;CR.rotation.z=-a;
+const dx=-.5*s,dy=py-.5*c,rz=Math.atan2(-dx,dy);
+for(let q=0;q<3;q++){const r=RODS[q];r[0].position.set(.5*s+dx/2,.5*c+dy/2,.9*S3.ex+r[1]);r[0].rotation.z=rz}
+rodS.position.set(0,pe,.9*S3.ex);rodB.position.set(.5*s,.5*c,.9*S3.ex);
+const top=pe+.4,h=Math.max(.01,4.4+1.6*S3.ex-top);burn.scale.y=h;burn.position.y=(4.4+1.6*S3.ex+top)/2;
+const d=a*180/PI;let col,op,glow=0;
+if(d<120){const q=d/120;col=colA.copy(cB).lerp(cO,q);op=.9-.35*q;glow=1-q}
+else if(d<212){const q=(d-120)/92;col=colA.copy(cO).lerp(cF,q);op=.55-.2*q}
+else{col=colA.copy(cF);op=.35}
+bm.color.copy(col);bm.opacity=op*(1-Math.min(1,S3.ex*3));pl.intensity=glow*2*(1-S3.ex);
+for(let i=0;i<EXM.length;i++){const m=EXM[i];m.position.copy(m.userData.b).addScaledVector(m.userData.v,S3.ex)}
+for(let i=0;i<HS.length;i++){const x=XV[i];if(x){const b=HS[i][3],e=S3.ex;HS[i].o.position.set(b[0]+x[0]*e,b[1]+x[1]*e,b[2]+x[2]*e)}}
+if(S3.w!==lw){lw=S3.w;MATS.forEach(m=>{m.wireframe=lw>.5;m.color.copy(m.userData.c).lerp(ink,lw)});paperEl.style.opacity=lw;topEl.style.color='#fff'}
+const n=tour&&tt?tt:(d<148?'Timpul motor: ardere și destindere':d<212?'Evacuare și transfer (baleiaj)':'Comprimare în cilindru + admisie în carter');
+if(n!==stg){stg=n;const el=document.getElementById('stage');el.textContent=n;gsap.fromTo(el,{opacity:0,y:8,filter:'blur(4px)'},{opacity:1,y:0,filter:'blur(0px)',duration:.35,ease:'power2.out',clearProps:'filter'})}
+if(foc){foc.o.getWorldPosition(v);tgt.lerp(v,.1)}
+const kz=V.k*S3.kz*Z;cam.position.set(tgt.x,tgt.y+cyf+.5*kz,tgt.z+dist*kz);cam.lookAt(tgt.x,tgt.y+cyf,tgt.z);
+E.updateMatrixWorld(true);
+const LAB=Math.max(S3.lab,S3.w);
+for(let i=0;i<hw.length;i++){const x=hw[i];HS[i].o.getWorldPosition(v);v.project(cam);const sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*Hh;x[0].style.transform='translate('+(sx-14)+'px,'+(sy-14)+'px)';
+if(LAB>0||lastLab>0){const L=LB[i],len=Math.hypot(sx-L.ax,sy-L.ay)||1,lv=cl(LAB*1.6-i*.05,0,1),ld=cl(LAB*1.6-i*.03,0,1);const fo=foc?(foc===HS[i]?1:.2):1;L.el.style.opacity=lv*fo;L.l.setAttribute('opacity',fo);
+L.l.setAttribute('x1',L.ax);L.l.setAttribute('y1',L.ay);L.l.setAttribute('x2',sx);L.l.setAttribute('y2',sy);L.l.setAttribute('stroke-dasharray',len);L.l.setAttribute('stroke-dashoffset',len*(1-ld));
+L.c.setAttribute('cx',sx);L.c.setAttribute('cy',sy);L.c.setAttribute('opacity',lv>.95?fo:0)}}
+lastLab=LAB;
+R.render(sc,cam)}
+
+cvEl.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});cvEl.addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
+// tastatură: 1–9 = piesele 1–9, A–D = piesele 10–13, Esc = înapoi (după poziția tastei, nu după limbă)
+addEventListener('keydown',e=>{if(!active||e.ctrlKey||e.metaKey||e.altKey||e.target.matches('input,textarea,select'))return;
+const m=/^(?:Digit|Numpad)([1-9])$/.exec(e.code)||/^Key([A-D])$/.exec(e.code);
+if(m){const i=/\d/.test(m[1])?+m[1]-1:m[1].charCodeAt(0)-56;if(i<HS.length){e.preventDefault();foc===HS[i]?overview():focus(i)}}
+else if(e.code==='Escape'&&foc)overview()});
+window.v3d={act:function(o){active=o;if(o){size();dirty=true;acc=0;fN=0;if(!raf){last=performance.now();raf=requestAnimationFrame(frame)}}}};
+})();
+</script>
+<script>
+const S=[...document.querySelectorAll('.slide')];let k=0;const TI=S.findIndex(s=>s.dataset.t==='toc'),mn=document.getElementById('mn');
+const bar=document.querySelector('#bar i'),cnt=document.getElementById('cnt'),pv=document.getElementById('pv'),nx=document.getElementById('nx');
+const st=[
+{n:'1. Admisia · 0°–180°',d:'Pistonul se deplasează de sus în jos. Supapa de admisie se deschide, cea de evacuare rămâne închisă. Particulele albastre ilustrează amestecul proaspăt care intră în cilindru.',y:150,c:'#4fc3f7',i:1,e:0,deg:0,flow:'in'},
+{n:'2. Comprimarea · 180°–360°',d:'Pistonul urcă și ambele supape sunt închise. Amestecul este comprimat, iar presiunea și temperatura cresc. Particulele se opresc: gazul este închis în cilindru.',y:70,c:'#ffb74d',i:0,e:0,deg:180,flow:''},
+{n:'3. Arderea și destinderea · 360°–540°',d:'În apropierea punctului de sus, bujia produce scânteia. Gazele fierbinți se extind și împing pistonul în jos. Bielă transmite forța către arborele cotit, care se rotește. Acesta este timpul motor.',y:150,c:'#ef5350',i:0,e:0,s:1,deg:360,flow:'burn'},
+{n:'4. Evacuarea · 540°–720°',d:'Supapa de evacuare se deschide. Pistonul urcă și împinge gazele arse afară. La final, ciclul se reia cu admisia.',y:70,c:'#90a4ae',i:0,e:1,deg:540,flow:'out'}];
+const P={y:70},pg=document.getElementById('pg'),gas=document.getElementById('gas'),sp=document.getElementById('sp'),vi=document.getElementById('vi'),ve=document.getElementById('ve'),biela=document.getElementById('biela'),crank=document.getElementById('crank'),crankPin=document.getElementById('crankPin'),crankArm=document.getElementById('crankArm'),intakeFlow=document.getElementById('intakeFlow'),exhaustFlow=document.getElementById('exhaustFlow'),flame=document.getElementById('flame'),viStem=document.getElementById('viStem'),veStem=document.getElementById('veStem');
+let tm,on=false,phase=0,cyclePaused=false,phaseTween=null;
+function draw(){
+// 720° = două rotații complete; pistonul urmează sinusul mecanismului bielă–manivelă.
+const crankAngle=phase*Math.PI/180;
+P.y=70+80*(1-Math.cos(crankAngle))/2;
+pg.setAttribute('transform','translate(0,'+P.y+')');const chamber=Math.max(0,P.y-40);gas.setAttribute('height',chamber);gas.setAttribute('y',40);
+const pinX=100+15*Math.sin(crankAngle),pinY=220+15*Math.cos(crankAngle);
+crankPin.setAttribute('cx',pinX);crankPin.setAttribute('cy',pinY);crankArm.setAttribute('x2',pinX);crankArm.setAttribute('y2',pinY);
+biela.setAttribute('x1',100);biela.setAttribute('y1',P.y+14);biela.setAttribute('x2',pinX);biela.setAttribute('y2',pinY);
+}
+function sparkFx(){const r=document.getElementById('sp2');if(!r)return;
+anime({targets:r,r:[{value:0,duration:1},{value:30,duration:130,easing:'easeOutQuad'},{value:0,duration:430,easing:'easeInQuad'}],opacity:[{value:0,duration:1},{value:.95,duration:130},{value:0,duration:430}]});
+gsap.fromTo(gas,{filter:'drop-shadow(0 0 0px #ff5722)'},{filter:'drop-shadow(0 0 10px #ff5722)',duration:.22,yoyo:true,repeat:2,clearProps:'filter'});
+}
+function run(i){if(!on||cyclePaused)return;i=Math.floor(i)%4;phase=i*180;const s=st[i];if(phaseTween)phaseTween.kill();
+document.getElementById('tt').textContent=s.n;document.getElementById('td').textContent=s.d;
+gsap.to(gas,{attr:{fill:s.c,opacity:i===2?.42:.3},duration:.35,ease:'power2.out'});
+gsap.to(vi,{attr:{fill:s.i?'#43b96b':'#888',y:s.i?25:30},duration:.3,ease:'power2.out'});gsap.to(viStem,{attr:{y:s.i?12:17},duration:.3});
+gsap.to(ve,{attr:{fill:s.e?'#43b96b':'#888',y:s.e?25:30},duration:.3,ease:'power2.out'});gsap.to(veStem,{attr:{y:s.e?12:17},duration:.3});
+intakeFlow.classList.toggle('active',s.flow==='in');exhaustFlow.classList.toggle('active',s.flow==='out');flame.classList.toggle('active',s.flow==='burn');
+if(s.s)sparkFx();
+// Piston and crank motion: each stroke is a full down/up traversal, eased to show endpoints.
+const rotStart=i*180,rotEnd=(i+1)*180;let rotObj={v:rotStart};phaseTween=gsap.to(rotObj,{v:rotEnd,duration:1150,ease:'none',onUpdate:()=>{phase=rotObj.v;draw()}});
+tm=setTimeout(()=>run((i+1)%4),1500);
+}
+function showPhase(i){clearTimeout(tm);on=true;cyclePaused=false;document.getElementById('cycleToggle').textContent='Pauză animație';run(i%4)}
+document.getElementById('cycleToggle').onclick=()=>{cyclePaused=!cyclePaused;if(cyclePaused){clearTimeout(tm);if(phaseTween)phaseTween.kill();document.getElementById('cycleToggle').textContent='Pornește animația'}else{document.getElementById('cycleToggle').textContent='Pauză animație';run(Math.floor(phase/180)%4)}};
+document.getElementById('cycleStep').onclick=()=>showPhase((Math.floor(phase/180)+1)%4);
+document.getElementById('cycleReset').onclick=()=>{clearTimeout(tm);if(phaseTween)phaseTween.kill();P.y=70;phase=0;draw();showPhase(0)};
+const touch=matchMedia('(pointer:coarse)').matches,noop={play(){},pause(){}};
+gsap.ticker.lagSmoothing(200);
+if(calm)gsap.globalTimeline.timeScale(50);
+const F=(t,s,a,b,pos)=>{if(!s||s.length===0)return;t.fromTo(s,Object.assign({opacity:0},a),Object.assign({opacity:1,clearProps:'filter'},b),pos)};
+let et;
+// Pregătește conținutul unui slide atunci când acesta devine activ. Resetează
+// elementele animate și declanșează efectele specifice slide-ului, fără a modifica ordinea prezentării.
+function enter(el,n,init){
+el.scrollTop=0;
+et&&et.kill();
+gsap.killTweensOf([...el.querySelectorAll('*')]);
+gsap.set(el.querySelectorAll('h1,h2'),{clearProps:'opacity,filter,transform'});
+gsap.set(el.querySelectorAll('.card,.f,.eng svg,.txt,.toc button,.toc i'),{clearProps:'filter,opacity'});
+gsap.set(el.querySelectorAll('.card,.f,.eng svg,.txt,.toc button,.toc i'),{clearProps:'transform,filter,opacity'});
+const t=et=gsap.timeline({delay:init?0:.15}),q=s=>el.querySelectorAll(s),h=q('h2')[0],o=q('.a:not(.card):not(.f):not(li)');
+if(h)t.fromTo(h,{'--draw':0},{'--draw':1,duration:calm?.01:1,ease:'power2.inOut'},.25);
+const rise=()=>F(t,o,{y:22},{y:0,duration:.55,stagger:.08});
+({
+0:()=>{F(t,o,{y:40},{y:0,stagger:.12,duration:.9,ease:'expo.out'});t.fromTo(el.querySelector('.hero-gear'),{scale:.7,rotation:-90,opacity:0},{scale:1,rotation:0,opacity:.04,duration:1.8,ease:'power3.out'},0)},
+1:()=>{rise();F(t,q('.card'),{rotationX:-35,y:30,transformOrigin:'50% 0',transformPerspective:600},{rotationX:0,y:0,stagger:.15,duration:.7,ease:'power3.out'},.2)},
+2:()=>{rise();F(t,q('.card'),{x:i=>i%2?70:-70,filter:'blur(4px)'},{x:0,filter:'blur(0px)',stagger:.15,duration:.8,ease:'power4.out'},.2)},
+3:()=>{rise();F(t,q('.card'),{scale:.7},{scale:1,stagger:.12,duration:.65,ease:'back.out(1.3)'},.2)},
+4:()=>{rise();F(t,q('.f'),{filter:'blur(6px)',scale:1.06},{filter:'blur(0px)',scale:1,stagger:.15,duration:.7,ease:'power2.out'},.3);
+  t.fromTo(q('.f'),{rotation:-.4},{rotation:0,duration:.5,stagger:.15,ease:'power2.out'},'>-.15')},
+5:()=>{F(t,q('.eng svg'),{scale:.7,rotation:-8},{scale:1,rotation:0,duration:.9,ease:'back.out(1.6)'},.1);F(t,q('.txt'),{x:40},{x:0,duration:.7,ease:'power3.out'},.3);t.call(()=>{if(!cyclePaused){clearTimeout(tm);showPhase(0)}},null,.15)},
+6:()=>{t.fromTo('#cv',{opacity:0,scale:.94},{opacity:1,scale:1,duration:.9,ease:'power2.out',clearProps:'transform'},0);
+  F(t,q('#top h1,#top p'),{y:-14},{y:0,stagger:.12,duration:.6},.2);F(t,q('#hud>*'),{y:24},{y:0,stagger:.12,duration:.6},.4);
+  t.fromTo('.hs',{scale:0},{scale:1,stagger:.06,duration:.5,ease:'back.out(3)',clearProps:'transform'},.7);
+  t.call(()=>{hp.play();hn.play()})},
+7:()=>{rise();t.call(()=>{tab(0,true);showPan(0)},null,.25)},
+8:()=>{rise();F(t,q('li'),{x:-50},{x:0,stagger:.18,duration:.7,ease:'power2.out'},.3)},
+toc:()=>{rise();tocStep(el,true)}
+})[n===TI?'toc':(n>TI?n-1:n)]()}
+
+/* pistoanele din etichete: doar în carduri, perioade diferite */
+// Inițializează sau actualizează elementele interactive din prezentare. Leagă
+// componentele vizuale de starea curentă și pregătește efectele care trebuie rulate la afișare.
+function inj(){document.querySelectorAll('.card .yr').forEach(y=>y.insertAdjacentHTML('afterbegin','<i class="pd"></i>'));
+if(!calm)anime({targets:'.card .yr .pd',translateY:[0,-4],scaleY:[1,.7],duration:()=>anime.random(500,900),direction:'alternate',loop:true,easing:'easeInOutSine',delay:anime.stagger(120)})}
+
+/* pulsul hotspoturilor + indiciul de swipe (anime.js); pornesc după intrarea slide-ului 3D */
+const hp=calm?noop:anime({targets:'.hs',scale:[1,1.12],direction:'alternate',loop:true,easing:'easeInOutSine',delay:anime.stagger(180),duration:1800,autoplay:false});
+const hn=(calm||!touch)?noop:anime({targets:'#hint',translateX:[-2,2],direction:'alternate',loop:true,duration:1600,easing:'easeInOutSine',autoplay:false});
+
+/* FUNDAL ANIMAT: roata dințată se rotește prin CSS, inclusiv pe telefoane; pistonul și aburul folosesc anime.js. Separarea rotației de GSAP evită blocarea ei la schimbarea slide-urilor. */
+const gearD=(n,ro,ri)=>{let d='';for(let i=0;i<n;i++){const a=i*2*Math.PI/n,w=Math.PI/n;[[a-w*.5,ri],[a-w*.28,ro],[a+w*.28,ro],[a+w*.5,ri]].forEach(([t,r],j)=>{d+=(i+j?'L':'M')+(r*Math.cos(t)).toFixed(1)+' '+(r*Math.sin(t)).toFixed(1)})}return d+'Z'};
+let spokes='';for(let i=0;i<6;i++){const a=i*Math.PI/3;spokes+='M'+(16*Math.cos(a)).toFixed(1)+' '+(16*Math.sin(a)).toFixed(1)+'L'+(58*Math.cos(a)).toFixed(1)+' '+(58*Math.sin(a)).toFixed(1)}
+const LN=['M-20 40C60 120 20 260 45 360S25 520 70 640','M1030 -20C975 90 995 200 962 300S990 480 950 640','M-20 20C200 8 360 30 520 16S800 8 1020 24'];
+const LINES='<svg class="bg-lines" viewBox="0 0 1000 600" preserveAspectRatio="none">'+LN.map(d=>'<path class="bg-trace" d="'+d+'"/>').join('')+LN.map(d=>'<path class="bg-line" pathLength="1" d="'+d+'"/>').join('')+'</svg>';
+const BG='<div id="bgl" class="bg" aria-hidden="true">'+LINES
++'<svg class="bg-gear" viewBox="-110 -110 220 220"><g class="gr"><path d="'+gearD(14,100,82)+'"/><circle r="58"/><circle r="16"/><path d="'+spokes+'"/></g></svg>'
++'<div class="bg-eng"><svg class="bg-steam" viewBox="0 0 100 90"><path class="stp" d="M30 88C18 70 42 58 30 40S40 12 32 2"/><path class="stp" d="M50 88C38 70 62 58 50 40S60 12 52 2"/><path class="stp" d="M70 88C58 70 82 58 70 40S80 12 72 2"/></svg>'
++'<svg class="bg-cyl" viewBox="0 0 100 170"><path d="M22 8V118H12V166H88V118H78V8Z"/><path d="M22 8H78"/><g class="pis"><rect x="25" y="62" width="50" height="14" rx="2"/><path d="M25 69H75M50 76V120"/></g><circle cx="50" cy="148" r="13"/><path d="M50 135V161"/></svg></div></div>';
+document.body.insertAdjacentHTML('afterbegin',BG);
+const bgl=document.getElementById('bgl'),BGA=[];
+S[0].style.overflow='hidden';
+S[0].insertAdjacentHTML('afterbegin','<svg class="hero-gear" viewBox="-110 -110 220 220" aria-hidden="true"><path d="'+gearD(18,100,84)+'"/><circle r="62"/><circle r="22"/><path d="'+spokes+'"/></svg>');
+if(!calm){
+
+BGA.push(anime({targets:bgl.querySelectorAll('.bg-line'),strokeDashoffset:[1,0],duration:(el,i)=>8000+i*2500,loop:true,easing:'linear',delay:anime.stagger(1200),autoplay:false}));
+BGA.push(anime({targets:bgl.querySelectorAll('.bg-gear,.bg-eng'),opacity:[.12,.2],duration:3000,direction:'alternate',loop:true,easing:'easeInOutSine',autoplay:false}));
+BGA.push(anime({targets:bgl.querySelector('.pis'),translateY:[0,34],duration:2000,direction:'alternate',loop:true,easing:'easeInOutSine',autoplay:false}));
+const SA=['M30 88C18 70 42 58 30 40S40 12 32 2','M50 88C38 70 62 58 50 40S60 12 52 2','M70 88C58 70 82 58 70 40S80 12 72 2'],
+SB=['M30 88C26 70 34 58 28 40S36 12 30 2','M50 88C46 70 56 58 50 40S58 12 50 2','M70 88C64 70 78 58 72 40S78 12 72 2'];
+BGA.push(anime({targets:bgl.querySelectorAll('.stp'),d:[{value:(el,i)=>SA[i]},{value:(el,i)=>SB[i]}],opacity:[.4,1],duration:(el,i)=>3600+i*700,direction:'alternate',loop:true,easing:'easeInOutSine',delay:anime.stagger(700),autoplay:false}))}
+
+// NAVIGAREA ÎNTRE SLIDE-URI
+// Timerul este folosit numai pentru dezvăluirea automată a următorului bloc din cuprins.
+let tocAutoTimer;
+// Schimbă slide-ul activ și coordonează tranzițiile dintre pagini. Actualizează bara
+// de progres, numărul slide-ului, butoanele de navigare și animațiile de fundal.
+// La revenirea în cuprins, afișează întâi denumirea slide-ului anterior, apoi dezvăluie
+// automat următorul bloc după o pauză de 0,5 secunde.
+function go(n,init,all){if(n<0||n>=S.length||(n===k&&!init))return;const old=S[k],el=S[n],d=n>=k?1:-1;
+S.forEach(s=>{if(s!==old&&s!==el){gsap.killTweensOf(s);s.classList.remove('on')}});
+if(old!==el){gsap.killTweensOf(old);gsap.to(old,{opacity:0,x:-40*d,duration:.35,ease:'power2.in',onComplete:()=>{old.classList.remove('on');gsap.set(old,{clearProps:'opacity,transform,filter'})}})}
+k=n;
+el.scrollTop=0;
+el.classList.add('on');
+gsap.killTweensOf(el);
+gsap.set(el,{clearProps:'filter,opacity,transform'});
+gsap.set(el.querySelectorAll('h1,h2'),{clearProps:'filter,opacity,transform'});
+gsap.fromTo(el,{opacity:0,x:50*d},{opacity:1,x:0,duration:.55,ease:'power3.out',delay:init?0:.12,clearProps:'transform,opacity,filter'});
+gsap.to(bar,{width:((k+1)/S.length*100)+'%',duration:.7,ease:'power2.inOut'});
+cnt.textContent=(k+1)+'/'+S.length;gsap.fromTo(cnt,{opacity:0,y:-6},{opacity:1,y:0,duration:.35,ease:'power2.out'});
+pv.disabled=k===0;nx.disabled=k===S.length-1;
+clearTimeout(tm);anime.remove(P);hp.pause();hn.pause();const is3=el.classList.contains('s3d');BGA.forEach(x=>is3?x.pause():x.play());gsap.to(bgl,{opacity:is3?0:1,duration:.4});
+on=el===S[6];window.v3d&&v3d.act(el.classList.contains('s3d'));
+if(el.dataset.t==='toc'){
+  clearTimeout(tocAutoTimer);
+  if(all) el._k=tb.length;
+  else if(old!==el){
+    const current=tb.findIndex(b=>+b.dataset.go===S.indexOf(old));
+    // Mai întâi apare doar slide-ul curent. Următorul se dezvăluie automat.
+    el._k=current>=0?Math.min(tb.length,current+1):0;
+  }
+}
+enter(el,n,init);
+if(el.dataset.t==='toc'&&!all&&old!==el&&(el._k||0)<tb.length){
+  tocAutoTimer=setTimeout(()=>{
+    if(S[k]===el&&(el._k||0)<tb.length){
+      el._k=(el._k||0)+1;
+      tocStep(el,false);
+    }
+  },500);
+}
+if(on){P.y=70;draw();run(0)}}
+/* NAVIGARE PAS CU PAS
+ * Următoarele funcții controlează trecerea între slide-uri și dezvăluirea succesivă a blocurilor.
+ * pas cu pas: pe cuprins fiecare apăsare / swipe dezvăluie câte un buton, apoi se trece la slide-ul următor */
+// Navighează înainte. Dacă utilizatorul se află în cuprins și mai există blocuri
+// ascunse, dezvăluie următorul bloc; altfel trece la slide-ul următor.
+function next(){const el=S[k];if(el.dataset.t==='toc'&&(el._k||0)<tb.length){el._k=(el._k||0)+1;tocStep(el);return}go(k+1)}
+// Navighează înapoi. În cuprins ascunde ultimul bloc afișat, dacă există;
+// în celelalte situații revine la slide-ul anterior.
+function prev(){const el=S[k];if(el.dataset.t==='toc'&&(el._k||0)>0){el._k--;tocStep(el);return}go(k-1,0,true)}
+pv.onclick=prev;nx.onclick=next;mn.onclick=()=>go(TI);
+
+/* INIȚIALIZAREA CUPRINSULUI
+ * Se colectează butoanele cu denumirile slide-urilor și se pregătesc culorile și stările lor.
+ * cuprins, exact ca pe site-ul de referință: elementul curent mare și plin, cele văzute mici, cele viitoare ascunse */
+const tb=[...document.querySelectorAll('.toc button')],cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+rgba=(h,a)=>{const n=parseInt(h.replace('#',''),16);return 'rgba('+(n>>16)+','+((n>>8)&255)+','+(n&255)+','+a+')'},
+G=(t,v,fast)=>fast?gsap.set(t,v):gsap.to(t,v);let tocCurB=null;
+// Evidențiază blocul selectat din cuprins și readuce celelalte blocuri la stilul normal.
+// Parametrul „fast” decide dacă schimbarea este instantanee sau folosește tranziții animate.
+function tocHi(b,fast){const ac=cv('--ac'),bd=cv('--bd');tb.forEach(x=>{const on=x===b;
+G(x,{paddingLeft:on?'1.6rem':'1rem',borderColor:on?ac:bd,boxShadow:on?'0 10px 24px '+rgba(ac,.28):'0 0 0 '+rgba(ac,0),duration:.4,ease:'power3.out',overwrite:'auto'},fast);
+G(x.querySelector('i'),{scale:on?1.4:1,duration:.45,ease:'back.out(2.5)'},fast);
+G(x.querySelector('.ar'),{opacity:on?1:0,x:on?0:-10,duration:.3,ease:'power2.out'},fast)})}
+// Aplică sau elimină clasa CSS care marchează vizual blocul curent din cuprins.
+// Această funcție păstrează separat logica de stare și stilizarea elementului.
+function tocFill(x,on){x.classList.toggle('cur',on)}
+/* ANIMAȚIA BLOCURILOR DIN CUPRINS
+ * Cardurile apar succesiv, cu un efect elastic; ultimul element vizibil este evidențiat.
+ * cuprins: cardurile se „împart” pe rând din cardul anterior (Card Spread), cel curent are bordură luminoasă care circulă (Animated Border Trail) */
+// Actualizează lista din cuprins în funcție de numărul de blocuri care trebuie să fie vizibile.
+// Ascunde blocurile viitoare, afișează blocurile deja dezvăluite, animă apariția celor noi
+// și evidențiază ultimul bloc vizibil ca element curent.
+function tocStep(el,instant){const k=el._k||0,fast=instant||calm;
+tb.forEach((x,i)=>{const vis=i<k,cur=i===k-1,v={opacity:vis?1:0,scale:cur?1.03:vis?1:.9,translateX:0,translateY:vis||calm?0:-10,rotate:0};
+x.style.transformOrigin='left center';x.style.pointerEvents=vis?'':'none';x.tabIndex=vis?0:-1;anime.remove(x);
+if(fast)anime.set(x,v);
+else if(vis&&!x._v){const p=(tocB=>tocB)(tb[i-1]),A=p?p.getBoundingClientRect():null,B=x.getBoundingClientRect();
+anime(Object.assign({targets:x,duration:600,easing:'easeOutElastic(1,.75)'},v,{translateX:[A?A.left-B.left:0,0],translateY:[A?A.top-B.top:30,0],rotate:[i%2?-5:5,0],opacity:[{value:0,duration:1},{value:1,duration:200}],scale:[.85,v.scale]}))}
+else anime(Object.assign({targets:x,duration:400,easing:'easeOutCubic'},v));
+x._v=vis;tocFill(x,cur)});
+tocCurB=tb[k-1]||null;tocHi(tocCurB,fast)}
+tb.forEach(b=>{b.insertAdjacentHTML('afterbegin','<span class="fill"></span>');b.insertAdjacentHTML('beforeend','<span class="ar">→</span>');gsap.set(b.querySelector('.fill'),{xPercent:-105});
+b.addEventListener('pointerenter',()=>tocHi(b));b.addEventListener('focus',()=>tocHi(b));
+b.addEventListener('pointerleave',()=>tocHi(tocCurB));b.addEventListener('blur',()=>tocHi(tocCurB))});
+// CLICK PE ELEMENTELE DE NAVIGARE
+// Detectează butoanele care indică un slide și pornește tranziția către pagina cerută.
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;const n=+b.dataset.go;
+if(!b.matches('.toc button')||calm){go(n);return}
+if(b._busy)return;b._busy=true;tocFill(b,true);tocHi(b);setTimeout(()=>{b._busy=false;go(n)},420)});
+// TASTATURĂ
+// Săgeata dreapta sau Space avansează, iar săgeata stânga revine; câmpurile de formular sunt ignorate.
+document.addEventListener('keydown',e=>{if(e.target.matches('input,button,textarea,select'))return;if(e.key==='ArrowRight'||e.key===' ')next();if(e.key==='ArrowLeft')prev()});
+// GESTURI TACTILE
+// Reține poziția inițială a degetului și detectează glisarea orizontală pentru navigare pe telefon.
+let x0=null;document.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{if(x0===null)return;const d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>60)(d<0?next():prev());x0=null});
+// EFECTE PENTRU CARDURI
+// Cardurile din slide-urile indicate primesc o mică animație la apăsare și la eliberare.
+S.slice(2,5).forEach(sl=>sl.querySelectorAll('.card').forEach(c=>{c.classList.add('st');
+c.addEventListener('pointerdown',()=>gsap.to(c,{scale:.98,duration:.12,overwrite:'auto'}));
+c.addEventListener('pointerup',()=>gsap.to(c,{scale:1,duration:.4,ease:'back.out(2.5)',overwrite:'auto'}))}));
+// EFECTE PENTRU BUTOANE
+// Adaugă reacții discrete la hover și apăsare pentru butoanele de navigare și controalele principale.
+document.querySelectorAll('nav button,.btn').forEach(b=>{
+const to=(v,e,d)=>{if(!b.disabled)gsap.to(b,{scale:v,duration:d||.3,ease:e||'back.out(3)',overwrite:'auto'})};
+b.addEventListener('pointerenter',()=>to(1.07));
+b.addEventListener('pointerleave',()=>to(1,'power2.out'));
+b.addEventListener('pointerdown',()=>to(.93,'power2.out',.12));
+b.addEventListener('pointerup',()=>to(1.07,'back.out(3)',.2))});
+[[pv,-3],[nx,3]].forEach(a=>{a[0].addEventListener('pointerenter',()=>{if(!a[0].disabled)gsap.to(a[0],{x:a[1],duration:.3,ease:'power2.out'})});a[0].addEventListener('pointerleave',()=>gsap.to(a[0],{x:0,duration:.3,ease:'power2.out'}))});
+/* INTERACȚIUNI DIN SLIDE-UL CU PANOURI
+ * Această secțiune controlează filele, panourile, cardurile și efectele vizuale asociate.
+ * slide mediu: tab-uri fluide, carduri care se întorc, inel animat, lumină care urmărește cursorul */
+document.querySelectorAll('.slide h2').forEach(h=>{h.innerHTML=h.textContent.split(' ').map(w=>'<span class="w"><span>'+w+'</span></span>').join(' ')});
+const tabsEl=document.querySelector('.tabs'),tbs=[...tabsEl.querySelectorAll('button')],pill=tabsEl.querySelector('.pill'),pans=[...document.querySelectorAll('.pan')];
+// Animează inelul circular și procentul afișat în interiorul lui. Folosește o valoare
+// intermediară pentru ca numărul să crească progresiv, sincronizat cu desenarea inelului.
+function ring(){const v=document.querySelector('.ring .v'),n=document.getElementById('rn'),o={n:0},d=calm?.01:1.4;
+gsap.fromTo(v,{strokeDashoffset:314},{strokeDashoffset:314*.77,duration:d,ease:'power3.out'});gsap.to(o,{n:23,duration:d,ease:'power3.out',onUpdate:()=>n.textContent=Math.round(o.n)+'%'})}
+// Afișează panoul corespunzător filei selectate și ascunde celelalte panouri.
+// Când animațiile sunt permise, elementele din panoul nou apar gradual; prima filă
+// reactivează și animația inelului de progres.
+function showPan(i){pans.forEach((p,j)=>p.classList.toggle('on',j===i));
+if(!calm)gsap.fromTo(pans[i].querySelectorAll('.card,.fl'),{y:24,opacity:0,rotationX:-20,transformPerspective:600},{y:0,opacity:1,rotationX:0,stagger:.08,duration:.55,ease:'power3.out',clearProps:'transform,opacity'});
+if(i===0)ring()}
+// Mută indicatorul animat sub fila selectată și actualizează clasele vizuale ale filelor.
+// Dacă „fast” este activ sau utilizatorul preferă mișcare redusă, indicatorul se mută instantaneu.
+function tab(i,fast){tbs.forEach((b,j)=>b.classList.toggle('on',j===i));tabsEl.classList.toggle('g',i===1);const b=tbs[i];
+gsap.to(pill,{x:b.offsetLeft-4,width:b.offsetWidth,duration:fast||calm?0:.5,ease:'back.out(1.5)'})}
+tbs.forEach((b,i)=>b.onclick=()=>{tab(i);showPan(i)});
+document.querySelectorAll('.fl').forEach(f=>f.onclick=()=>f.classList.toggle('on'));
+document.addEventListener('pointermove',e=>{const c=e.target.closest&&e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--mx',e.clientX-r.left+'px');c.style.setProperty('--my',e.clientY-r.top+'px')});
+tb.forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();b.style.setProperty('--mx',e.clientX-r.left+'px');b.style.setProperty('--my',e.clientY-r.top+'px')});
+b.addEventListener('pointerdown',e=>{if(calm)return;const r=b.getBoundingClientRect(),d=document.createElement('i');d.className='rp';d.style.left=e.clientX-r.left+'px';d.style.top=e.clientY-r.top+'px';b.appendChild(d);setTimeout(()=>d.remove(),700)})});
+
+// MOD ECRAN COMPLET
+// Cere browserului să ascundă interfața sa (bara de adresă și controalele),
+// dacă acesta permite Fullscreen API. Ieșirea din modul complet se face din
+// același buton sau prin gestul/butonul Escape al browserului.
+const fsBtn=document.getElementById('fs');
+const fsSupported=!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
+if(!fsSupported){
+  fsBtn.title='Modul ecran complet nu este acceptat de acest browser';
+  fsBtn.setAttribute('aria-label',fsBtn.title);
+}
+fsBtn.addEventListener('click',async()=>{
+  try{
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      if(document.exitFullscreen) await document.exitFullscreen();
+      else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }else if(document.documentElement.requestFullscreen){
+      await document.documentElement.requestFullscreen();
+    }else if(document.documentElement.webkitRequestFullscreen){
+      document.documentElement.webkitRequestFullscreen();
+    }
+  }catch(err){
+    fsBtn.title='Browserul nu a permis modul ecran complet';
+  }
+});
+function updateFsButton(){
+  const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  fsBtn.textContent=active?'⛶':'⛶';
+  fsBtn.title=active?'Ieșire din ecran complet':'Ecran complet';
+  fsBtn.setAttribute('aria-label',fsBtn.title);
+}
+document.addEventListener('fullscreenchange',updateFsButton);
+document.addEventListener('webkitfullscreenchange',updateFsButton);
+
+// PORNIREA PREZENTĂRII
+// Desenează primul cadru, inițializează elementele interactive și afișează primul slide.
+draw();inj();go(0,1);
+</script>
+</body>
+</html>
