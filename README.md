@@ -1,0 +1,1 @@
+# motoare-termice
